@@ -1,0 +1,23 @@
+name: peg
+version: "0.0.0"
+author: Morreski
+about: Generate entities for various languages and ORMs from a Postgres database
+args:
+  - URL:
+      help: Postgres database URL
+      required: true
+      index: 1
+  - dialect:
+      help: "name of the dialect to use to generate entities (eg: python-sqlalchemy)"
+      required: true
+      index: 2
+      possible_values:
+        - python-sqlalchemy
+        - ts-typeorm
+  - out:
+      help: "Directory where entities will be generated"
+      long: out
+      short: o
+      takes_value: true
+      value_name: PATH
+      default_value: "./"

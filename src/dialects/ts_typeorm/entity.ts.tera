@@ -1,0 +1,7 @@
+import * as typeorm from 'typeorm';
+
+@typeorm.Entity('{{table_name}}', { schema: '{{schema}}' })
+export class {{table_name_camel_cased}} { {% for column in columns | sort(attribute="desc.name") %}
+    @typeorm.Column('{{column.desc.pg_type}}', { name: '{{column.desc.name}}'{%if column.desc.is_array %}, array: true{% endif %} })
+    {{column.desc.name}}: {{column.ts_type}};
+{% endfor %}}
