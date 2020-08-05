@@ -5,6 +5,8 @@ use std::io::Write;
 use std::path::Path;
 use tera;
 
+static TEMPLATE: &'static str = include_str!("./entity.ts.tera");
+
 #[derive(Serialize)]
 struct TypeOrmColumn<'a> {
     desc: &'a ColumnDescription,
@@ -32,7 +34,7 @@ pub fn generate_entities(tables: &Vec<TableDescription>, dest_path: &String) {
 }
 
 pub fn generate_single_entity_file(table: &TableDescription, dest_path: &String) {
-    let tera = match tera::Tera::new("src/dialects/ts_typeorm/*") {
+    let mut tera = match tera::Tera::new("*") {
         Ok(t) => t,
         Err(e) => {
             println!("{}", e);
@@ -52,7 +54,7 @@ pub fn generate_single_entity_file(table: &TableDescription, dest_path: &String)
     let file_name = format!("{}.ts", table.name);
     let file_path = Path::new(dest_path).join(&file_name);
     let mut file = File::create(&file_path).unwrap();
-    match tera.render("entity.ts.tera", &context) {
+    match tera.render_str(&TEMPLATE, &context) {
         Ok(t) => file.write_all(t.as_bytes()).unwrap(),
         Err(e) => println!("{}", e),
     };
