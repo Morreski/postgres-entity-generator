@@ -21,3 +21,10 @@ args:
       takes_value: true
       value_name: PATH
       default_value: "./"
+  - schema:
+      help: "Name of the database schema to describe"
+      long: schema
+      short: s
+      takes_value: true
+      value_name: SCHEMA_NAME
+      default_value: "public"
