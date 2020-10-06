@@ -34,7 +34,7 @@ pub fn generate_entities(tables: &Vec<TableDescription>, dest_path: &String) {
 }
 
 pub fn generate_single_entity_file(table: &TableDescription, dest_path: &String) {
-    let mut tera = match tera::Tera::new("*") {
+    let mut tera = match tera::Tera::new("/dev/null*") {
         Ok(t) => t,
         Err(e) => {
             println!("{}", e);
