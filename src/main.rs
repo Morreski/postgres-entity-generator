@@ -21,19 +21,25 @@ fn main() {
         .unwrap();
     match dialect {
         Dialect::TSTypeorm => dialects::ts_typeorm::generate_entities(&tables, &out_path),
+        Dialect::PySqlAlchemy => dialects::py_sqlalchemy::generate_entities(&tables, &out_path),
     };
 }
 
 #[derive(Debug)]
 enum Dialect {
     TSTypeorm,
+    PySqlAlchemy,
 }
 
 impl Dialect {
     fn from_string(s: &String) -> Option<Dialect> {
         if *s == String::from("ts-typeorm") {
             return Some(Dialect::TSTypeorm);
-        } else {
+        }
+        else if *s == String::from("py-sqlalchemy") {
+            return Some(Dialect::PySqlAlchemy);
+        }
+        else {
             return None;
         }
     }
@@ -51,7 +57,19 @@ fn get_tables_description(url: &String, schema: &String) -> Result<Vec<TableDesc
             c.table_schema,
             c.table_name,
             c.column_name,
-            COALESCE (tco.constraint_type, '') = 'PRIMARY KEY' as is_pk,
+            c.column_default,
+            c.is_nullable = 'YES' as is_nullable,
+            c.column_name IN (SELECT
+pg_attribute.attname
+FROM pg_index, pg_class, pg_attribute, pg_namespace
+WHERE
+  pg_class.oid = (c.table_schema || '.' ||c.table_name)::regclass AND
+  indrelid = pg_class.oid AND
+  nspname = c.table_schema AND
+  pg_class.relnamespace = pg_namespace.oid AND
+  pg_attribute.attrelid = pg_class.oid AND
+  pg_attribute.attnum = any(pg_index.indkey)
+ AND indisprimary) AS is_pk,
             CASE
                 WHEN c.data_type = 'ARRAY' THEN e.data_type
                 ELSE c.data_type
@@ -61,10 +79,7 @@ fn get_tables_description(url: &String, schema: &String) -> Result<Vec<TableDesc
         LEFT JOIN information_schema.element_types e
             ON ((c.table_catalog, c.table_schema, c.table_name, 'TABLE', c.dtd_identifier)
                 = (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier))
-        LEFT JOIN information_schema.key_column_usage as k
-            ON ((c.column_name, c.table_name, c.table_schema) = (k.column_name, k.table_name, k.table_schema))
-        LEFT JOIN information_schema.table_constraints tco
-            ON ((k.constraint_name, k.table_name, k.table_schema) = (tco.constraint_name, tco.table_name, tco.table_schema))
+
         WHERE c.table_schema = $1 AND c.data_type != 'USER-DEFINED'
         ORDER BY c.table_name;", &[schema]).map_err(|e| e.to_string())?;
     let mut tables: HashMap<String, TableDescription> = HashMap::new();
@@ -74,6 +89,8 @@ fn get_tables_description(url: &String, schema: &String) -> Result<Vec<TableDesc
             pg_type: row.get("data_type"),
             is_array: row.get("is_array"),
             is_pk: row.get("is_pk"),
+            is_nullable: row.get("is_nullable"),
+            default_value: row.get("column_default")
         };
         let table_name: String = row.get("table_name");
         match tables.get_mut(&table_name) {

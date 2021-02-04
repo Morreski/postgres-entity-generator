@@ -12,7 +12,7 @@ args:
       required: true
       index: 2
       possible_values:
-        - python-sqlalchemy
+        - py-sqlalchemy
         - ts-typeorm
   - out:
       help: "Directory where entities will be generated"

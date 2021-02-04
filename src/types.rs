@@ -29,6 +29,8 @@ pub struct ColumnDescription {
     pub pg_type: String,
     pub is_array: bool,
     pub is_pk: bool,
+    pub is_nullable: bool,
+    pub default_value: Option<String>,
 }
 
 impl std::fmt::Display for ColumnDescription {
