@@ -43,20 +43,16 @@ pub fn generate_entities(tables: &Vec<TableDescription>, dest_path: &String) {
 
      for _ in tables
         .iter()
-        .filter(|t| has_primary_key(t))
         .map(|t| generate_entity(&mut file, t))
     {}
 }
 
 fn write_header(file: &mut File) {
-    file.write("import sqlalchemy as sa\nimport sqlalchemy.dialects.postgresql as pg\nfrom sqlalchemy.ext.declarative import declarative_base\n\nBase = declarative_base()\nmetadata = Base.metadata\n\n\n".as_bytes());
-}
-
-fn has_primary_key(table: &TableDescription) -> bool {
-    return table.columns.iter().any(|c| c.is_pk);
+    file.write("import sqlalchemy as sa\nimport sqlalchemy.dialects.postgresql as pg\nfrom sqlalchemy.ext.declarative import declarative_base\n\nBase = declarative_base()\nmetadata = Base.metadata\n\n\n".as_bytes()).expect("unable to write file header");
 }
 
 fn generate_entity(file: &mut File, table: &TableDescription) {
+    println!("{}", table.name);
     let mut tera = match tera::Tera::new("/dev/null*") {
         Ok(t) => t,
         Err(e) => {
@@ -90,7 +86,7 @@ fn generate_entity(file: &mut File, table: &TableDescription) {
         Ok(t) => file.write_all(t.as_bytes()).unwrap(),
         Err(e) => println!("{}", e),
     };
-     println!("{}", table.name);
+
 }
 
 fn generate_single_entity_file(table: &TableDescription, dest_path: &String) {
@@ -127,6 +123,7 @@ fn get_scalar_py_type(pg_type: &String) -> Option<String> {
         "integer" => Some(String::from("sa.Integer")),
         "double precision" => Some(String::from("sa.Float")),
         "single precision" => Some(String::from("sa.Float")),
+        "real" => Some(String::from("sa.Float")),
         "bigint" => Some(String::from("sa.BigInteger")),
 
         s if s.starts_with(&"character varying") => Some(String::from("sa.String")),

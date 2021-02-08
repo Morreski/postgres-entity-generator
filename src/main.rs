@@ -74,6 +74,9 @@ WHERE
                 WHEN c.data_type = 'ARRAY' THEN e.data_type
                 ELSE c.data_type
             END as data_type,
+       case when c.character_maximum_length is not null
+            then c.character_maximum_length
+            else c.numeric_precision end as max_length,
             c.data_type = 'ARRAY' as is_array
         FROM information_schema.columns c
         LEFT JOIN information_schema.element_types e
@@ -81,7 +84,8 @@ WHERE
                 = (e.object_catalog, e.object_schema, e.object_name, e.object_type, e.collection_type_identifier))
 
         WHERE c.table_schema = $1 AND c.data_type != 'USER-DEFINED'
-        ORDER BY c.table_name;", &[schema]).map_err(|e| e.to_string())?;
+        ORDER BY c.table_name, c.column_name
+;", &[schema]).map_err(|e| e.to_string())?;
     let mut tables: HashMap<String, TableDescription> = HashMap::new();
     for row in row_iter {
         let column = ColumnDescription {
@@ -90,7 +94,8 @@ WHERE
             is_array: row.get("is_array"),
             is_pk: row.get("is_pk"),
             is_nullable: row.get("is_nullable"),
-            default_value: row.get("column_default")
+            default_value: row.get("column_default"),
+            max_length: row.get("max_length"),
         };
         let table_name: String = row.get("table_name");
         match tables.get_mut(&table_name) {
@@ -113,7 +118,5 @@ WHERE
         return Err(String::from("No tables in db"));
     }
 
-    let mut out: Vec<TableDescription> = tables.drain().map(|(_, v)| v).collect();
-    out.sort_by(|a, b| a.name.cmp(&b.name));
-    return Ok(out);
+    return Ok(tables.drain().map(|(_, v)| v).collect());
 }

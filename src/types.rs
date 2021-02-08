@@ -31,6 +31,7 @@ pub struct ColumnDescription {
     pub is_pk: bool,
     pub is_nullable: bool,
     pub default_value: Option<String>,
+    pub max_length: Option<i32>,
 }
 
 impl std::fmt::Display for ColumnDescription {
