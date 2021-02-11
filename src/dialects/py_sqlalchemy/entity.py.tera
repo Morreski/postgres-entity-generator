@@ -7,6 +7,7 @@ t_{{table_name}} = sa.Table(
 class {{table_name_camel_cased}}(Base):
     __tablename__ = "{{table_name}}"
     __table_args__ = ({% if pk_columns | length > 1%}sa.PrimaryKeyConstraint({% for pk in pk_columns%}'{{pk.desc.name}}',{%endfor%}),{%endif%}{"schema": "{{schema}}"},)
+    __mapper_args__ = {"eager_defaults": True}
 
 {% for column in pk_columns | sort(attribute="desc.name") %}    {{column.desc.name}}{%if column.desc.name == 'metadata'%}_{%endif%} = sa.Column({%if column.desc.name == 'metadata'%}'metadata', {%endif%}{{column.ts_type}}, primary_key=True{%if not column.desc.is_nullable %}, nullable=False{%endif%}{%if column.desc.default_value %}, server_default=sa.text("{{column.desc.default_value | addslashes}}"){%endif%})
 {%endfor%}
