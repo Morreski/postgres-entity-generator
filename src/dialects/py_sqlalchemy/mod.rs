@@ -139,6 +139,7 @@ fn get_scalar_py_type(pg_type: &String) -> Option<String> {
         "bytea" => Some(String::from("sa.LargeBinary")),
         "inet" => Some(String::from("pg.INET")),
         "int4range" => Some(String::from("pg.INT4RANGE")),
+        "numeric" => Some(String::from("sa.Numeric")),
         _ => None,
     };
 }
