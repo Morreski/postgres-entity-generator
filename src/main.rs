@@ -118,5 +118,8 @@ WHERE
         return Err(String::from("No tables in db"));
     }
 
-    return Ok(tables.drain().map(|(_, v)| v).collect());
+    let mut out: Vec<TableDescription> = tables.drain().map(|(_, v)| v).collect();
+    out.sort_by(|a,b| return a.name.cmp(&b.name));
+
+    return Ok(out);
 }
