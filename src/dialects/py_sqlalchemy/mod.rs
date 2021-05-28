@@ -140,6 +140,7 @@ fn get_scalar_py_type(pg_type: &String) -> Option<String> {
         "inet" => Some(String::from("pg.INET")),
         "int4range" => Some(String::from("pg.INT4RANGE")),
         "numeric" => Some(String::from("sa.Numeric")),
+        "character" => Some(String::from("sa.Char")),
         _ => None,
     };
 }
