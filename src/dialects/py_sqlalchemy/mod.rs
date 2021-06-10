@@ -142,6 +142,7 @@ fn get_scalar_py_type(pg_type: &String) -> Option<String> {
         "numeric" => Some(String::from("sa.Numeric")),
         "character" => Some(String::from("sa.CHAR")),
         "box" =>  Some(String::from("Geometry('box')")),
+        "polygon" =>  Some(String::from("Geometry('polygon')")),
         _ => None,
     };
 }
