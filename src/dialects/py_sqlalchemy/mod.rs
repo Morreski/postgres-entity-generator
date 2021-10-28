@@ -48,7 +48,42 @@ pub fn generate_entities(tables: &Vec<TableDescription>, dest_path: &String) {
 }
 
 fn write_header(file: &mut File) {
-    file.write("import sqlalchemy as sa\nimport sqlalchemy.dialects.postgresql as pg\nfrom sqlalchemy.ext.declarative import declarative_base\n\nBase = declarative_base()\nmetadata = Base.metadata\nfrom geoalchemy2 import Geometry\n\n\n".as_bytes()).expect("unable to write file header");
+    file.write(r#"
+import sqlalchemy as sa
+import sqlalchemy.dialects.postgresql as pg
+from sqlalchemy.ext.declarative import declarative_base
+import ast
+import geoalchemy2
+
+Base = declarative_base()
+metadata = Base.metadata
+
+def _make_geometry_type(name):
+    class MyType(sa.types.UserDefinedType):
+        comparator_factory = geoalchemy2.comparator.Comparator
+
+        def get_col_spec(self, **kw):
+            return name
+
+        def bind_processor(self, dialect):
+            def process(value):
+                return value
+
+            return process
+
+        def result_processor(self, dialect, coltype):
+            def process(value):
+                return ast.literal_eval(value)
+
+            return process
+
+    return MyType
+
+
+_PgPolygon = _make_geometry_type("polygon")
+_PgBox = _make_geometry_type("box")
+
+"#.as_bytes()).expect("unable to write file header");
 }
 
 fn generate_entity(file: &mut File, table: &TableDescription) {
@@ -141,8 +176,8 @@ fn get_scalar_py_type(pg_type: &String) -> Option<String> {
         "int4range" => Some(String::from("pg.INT4RANGE")),
         "numeric" => Some(String::from("sa.Numeric")),
         "character" => Some(String::from("sa.CHAR")),
-        "box" =>  Some(String::from("Geometry('box')")),
-        "polygon" =>  Some(String::from("Geometry('polygon')")),
+        "box" =>  Some(String::from("_PgBox")),
+        "polygon" =>  Some(String::from("_PgPolygon")),
         _ => None,
     };
 }
