@@ -163,6 +163,7 @@ fn get_scalar_py_type(pg_type: &String) -> Option<String> {
 
         s if s.starts_with(&"character varying") => Some(String::from("sa.String")),
         "text" => Some(String::from("sa.Text")),
+        "name" => Some(String::from("sa.Text")),
         "uuid" => Some(String::from("pg.UUID")),
         s if s.starts_with(&"timestamp") && s.ends_with(&"range") => Some(String::from("pg.TSTZRANGE")),
         s if s.starts_with(&"timestamp") => Some(String::from("sa.DateTime(True)")),
