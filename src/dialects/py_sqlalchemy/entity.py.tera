@@ -1,7 +1,7 @@
 {% if pk_columns | length == 0 %}
 t_{{table_name}} = sa.Table(
   '{{table_name}}', metadata,
-  {% for column in columns %}sa.Column('{{column.desc.name}}', {{column.ts_type}}{%if not column.desc.is_nullable %}, nullable=False{%endif%}{%if column.desc.default_value %}, server_default=sa.text(r"""{{column.desc.default_value}}"""){%endif%}),{% endfor %}
+  {% for column in columns %}sa.Column('{{column.desc.name}}', {{column.ts_type}}{%if not column.desc.is_nullable %}, nullable=False{%endif%}{%if column.desc.default_value %}, server_default=sa.text(r"""{{column.desc.default_value}}"""){%endif%}),{% endfor %}schema="{{schema}}"
 )
 {% else %}
 class {{table_name_camel_cased}}(Base):
