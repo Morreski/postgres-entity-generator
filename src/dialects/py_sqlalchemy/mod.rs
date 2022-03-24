@@ -52,7 +52,6 @@ fn write_header(file: &mut File) {
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from sqlalchemy.ext.declarative import declarative_base
-import ast
 import geoalchemy2
 
 Base = declarative_base()
@@ -73,7 +72,7 @@ def _make_geometry_type(name):
 
         def result_processor(self, dialect, coltype):
             def process(value):
-                return ast.literal_eval(value)
+                return value
 
             return process
 
