@@ -167,7 +167,7 @@ fn get_scalar_py_type(pg_type: &String) -> Option<String> {
             Some(String::from("pg.TSTZRANGE"))
         }
         s if s.starts_with(&"timestamp") => Some(String::from("sa.DateTime(True)")),
-        "time" => Some(String::from("sa.Time")),
+        s if s.starts_with(&"time") => Some(String::from("sa.Time")),
         "jsonb" => Some(String::from("pg.JSONB")),
         "json" => Some(String::from("sa.JSON")),
         "interval" => Some(String::from("pg.INTERVAL")),
