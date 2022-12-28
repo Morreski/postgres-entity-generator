@@ -41,14 +41,12 @@ pub fn generate_entities(tables: &Vec<TableDescription>, dest_path: &String) {
 
     write_header(&mut file);
 
-     for _ in tables
-        .iter()
-        .map(|t| generate_entity(&mut file, t))
-    {}
+    for _ in tables.iter().map(|t| generate_entity(&mut file, t)) {}
 }
 
 fn write_header(file: &mut File) {
-    file.write(r#"
+    file.write(
+        r#"
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as pg
 from sqlalchemy.ext.declarative import declarative_base
@@ -82,7 +80,10 @@ def _make_geometry_type(name):
 _PgPolygon = _make_geometry_type("polygon")
 _PgBox = _make_geometry_type("box")
 
-"#.as_bytes()).expect("unable to write file header");
+"#
+        .as_bytes(),
+    )
+    .expect("unable to write file header");
 }
 
 fn generate_entity(file: &mut File, table: &TableDescription) {
@@ -115,12 +116,10 @@ fn generate_entity(file: &mut File, table: &TableDescription) {
 
     context.insert("pk_columns", &pks);
 
-
     match tera.render_str(&TEMPLATE, &context) {
         Ok(t) => file.write_all(t.as_bytes()).unwrap(),
         Err(e) => println!("{}", e),
     };
-
 }
 
 fn generate_single_entity_file(table: &TableDescription, dest_path: &String) {
@@ -164,8 +163,11 @@ fn get_scalar_py_type(pg_type: &String) -> Option<String> {
         "text" => Some(String::from("sa.Text")),
         "name" => Some(String::from("sa.Text")),
         "uuid" => Some(String::from("pg.UUID")),
-        s if s.starts_with(&"timestamp") && s.ends_with(&"range") => Some(String::from("pg.TSTZRANGE")),
+        s if s.starts_with(&"timestamp") && s.ends_with(&"range") => {
+            Some(String::from("pg.TSTZRANGE"))
+        }
         s if s.starts_with(&"timestamp") => Some(String::from("sa.DateTime(True)")),
+        "time" => Some(String::from("sa.Time")),
         "jsonb" => Some(String::from("pg.JSONB")),
         "json" => Some(String::from("sa.JSON")),
         "interval" => Some(String::from("pg.INTERVAL")),
@@ -176,8 +178,8 @@ fn get_scalar_py_type(pg_type: &String) -> Option<String> {
         "int4range" => Some(String::from("pg.INT4RANGE")),
         "numeric" => Some(String::from("sa.Numeric")),
         "character" => Some(String::from("sa.CHAR")),
-        "box" =>  Some(String::from("_PgBox")),
-        "polygon" =>  Some(String::from("_PgPolygon")),
+        "box" => Some(String::from("_PgBox")),
+        "polygon" => Some(String::from("_PgPolygon")),
         _ => None,
     };
 }
