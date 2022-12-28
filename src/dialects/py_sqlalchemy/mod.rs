@@ -150,7 +150,7 @@ fn to_camel_case(s: &String) -> String {
 }
 
 fn get_scalar_py_type(pg_type: &String) -> Option<String> {
-    return match pg_type.replace("[]", "").as_str() {
+    return match remove_brackets(pg_type).as_str() {
         "boolean" => Some(String::from("sa.Boolean")),
 
         "integer" => Some(String::from("sa.Integer")),
@@ -182,4 +182,21 @@ fn get_scalar_py_type(pg_type: &String) -> Option<String> {
         "polygon" => Some(String::from("_PgPolygon")),
         _ => None,
     };
+}
+
+fn remove_brackets(s: &String) -> String {
+    let mut result = String::new();
+    let mut in_bracket = false;
+
+    for c in s.chars() {
+        if c == '[' {
+            in_bracket = true;
+        } else if c == ']' {
+            in_bracket = false;
+        } else if !in_bracket {
+            result.push(c);
+        }
+    }
+
+    result
 }
